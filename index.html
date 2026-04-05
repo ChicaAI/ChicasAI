@@ -234,7 +234,7 @@ select.ai-select:focus{border-color:rgba(232,37,26,.5);}
 <!-- ══════════════════════ SIDEBAR -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <h2>Chica's AI</h2>
+    <h2>Glitch AI</h2>
     <p>Powered by Puter.js</p>
   </div>
 
@@ -439,16 +439,63 @@ select.ai-select:focus{border-color:rgba(232,37,26,.5);}
 
   <!-- ══ PAGE: IMAGE GEN -->
   <div class="page" id="page-image">
-    <div class="page-header"><h1>Image Generation</h1><p>Text-to-image via Puter.js AI</p></div>
+    <div class="page-header">
+      <h1>Image <span>Generation</span></h1>
+      <p>Text-to-image via Puter.js — use the style presets and prompt tips for best results</p>
+    </div>
     <div class="divider"></div>
+
+    <!-- Tip banner -->
+    <div style="background:rgba(232,37,26,.07);border:1px solid rgba(232,37,26,.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--text-mid);line-height:1.8;">
+      <strong style="color:var(--red);font-weight:700;">💡 Tip:</strong> AI image models work best with <strong style="color:var(--text);">detailed, descriptive prompts</strong>.
+      Instead of <em>"make me a logo called Glitch AI"</em>, try <em>"Glitch AI logo, bold modern typography, neon cyan glitch effect, dark background, professional vector style, high contrast"</em>.
+      Use the <strong style="color:var(--text);">Enhance Prompt</strong> button to auto-improve your description.
+    </div>
+
     <div class="card">
-      <div class="section-title">Generate Image</div>
-      <div class="input-wrap"><textarea class="ai-input" id="imgPrompt" rows="3" placeholder="Describe the image you want to create..."></textarea></div>
+      <div class="section-title">Style Presets</div>
+      <div class="tone-row" id="imgStyleRow">
+        <button class="tone-pill active" data-style="">None</button>
+        <button class="tone-pill" data-style="professional logo design, vector style, clean, minimal, high contrast">Logo</button>
+        <button class="tone-pill" data-style="photorealistic, 8K, professional photography, cinematic lighting, sharp detail">Photo</button>
+        <button class="tone-pill" data-style="digital art, concept art, highly detailed, vibrant colors, trending on ArtStation">Digital Art</button>
+        <button class="tone-pill" data-style="3D render, octane render, studio lighting, ray tracing, ultra detailed">3D Render</button>
+        <button class="tone-pill" data-style="flat design illustration, clean lines, modern UI style, pastel colors">Illustration</button>
+        <button class="tone-pill" data-style="cyberpunk aesthetic, neon lights, dark moody atmosphere, futuristic, synthwave">Cyberpunk</button>
+        <button class="tone-pill" data-style="anime style, vibrant, detailed background, studio ghibli inspired">Anime</button>
+        <button class="tone-pill" data-style="pixel art, 16-bit, retro game style, crisp pixels">Pixel Art</button>
+        <button class="tone-pill" data-style="watercolor painting, soft brush strokes, artistic, warm tones">Watercolor</button>
+        <button class="tone-pill" data-style="minimalist, white background, simple shapes, clean, negative space">Minimal</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Your Prompt</div>
+      <div class="input-wrap">
+        <textarea class="ai-input" id="imgPrompt" rows="3" placeholder="Describe what you want to generate... (be specific about colors, style, mood, subject)"></textarea>
+      </div>
+      <div id="enhancedPromptBox" style="display:none;background:var(--bg3);border:1px solid rgba(232,37,26,.2);border-radius:8px;padding:12px 14px;margin:10px 0;font-size:12px;color:var(--green);line-height:1.7;">
+        <span style="font-size:10px;font-weight:700;color:var(--red);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Enhanced Prompt</span>
+        <span id="enhancedPromptText"></span>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn sm" onclick="useEnhancedPrompt()">Use This</button>
+          <button class="btn secondary sm" onclick="document.getElementById('enhancedPromptBox').style.display='none'">Dismiss</button>
+        </div>
+      </div>
       <div class="btn-row">
         <button class="btn" onclick="generateImage()">Generate</button>
-        <button class="btn secondary" onclick="document.getElementById('imgGrid').innerHTML=''">Clear</button>
+        <button class="btn secondary" onclick="enhancePrompt()">✨ Enhance Prompt</button>
+        <button class="btn secondary" onclick="document.getElementById('imgGrid').innerHTML='';document.getElementById('enhancedPromptBox').style.display='none'">Clear All</button>
       </div>
-      <div class="loader" id="imgLoader"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div><span class="loader-txt">GENERATING...</span></div>
+      <div class="loader" id="imgLoader"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div><span class="loader-txt" id="imgLoaderTxt">Generating...</span></div>
+      <div class="loader" id="enhanceLoader" style="margin-top:8px;"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div><span class="loader-txt">Enhancing prompt...</span></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Results</div>
+      <div id="imgPlaceholder" style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:13px;">
+        Your generated images will appear here
+      </div>
       <div class="img-grid" id="imgGrid"></div>
     </div>
   </div>
@@ -1394,7 +1441,7 @@ function exportChat() {
   const txt = msgs.map(m => `[${m.role.toUpperCase()}] ${m.content}`).join('\n\n---\n\n');
   const blob = new Blob([txt], {type:'text/plain'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'chica-chat-' + Date.now() + '.txt'; a.click();
+  a.download = 'glitch-chat-' + Date.now() + '.txt'; a.click();
   showToast('Chat exported!');
 }
 
@@ -1405,29 +1452,96 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ═══════════════════════════════════════════ IMAGE GEN
-async function generateImage() {
+let selectedImgStyle = '';
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#imgStyleRow .tone-pill').forEach(p => {
+    p.addEventListener('click', function() {
+      document.querySelectorAll('#imgStyleRow .tone-pill').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+      selectedImgStyle = this.dataset.style;
+    });
+  });
+});
+
+function buildFinalPrompt(userPrompt) {
+  let parts = [userPrompt.trim()];
+  if (selectedImgStyle) parts.push(selectedImgStyle);
+  // always append quality boosters
+  parts.push('high quality, detailed, sharp focus');
+  return parts.join(', ');
+}
+
+async function enhancePrompt() {
   const prompt = document.getElementById('imgPrompt').value.trim();
   if (!prompt) { showToast('Enter a prompt first'); return; }
+  if (!puterOk('imgGrid', 'imgGrid')) return;
+
+  const loader = document.getElementById('enhanceLoader');
+  loader.classList.add('active');
+  document.getElementById('enhancedPromptBox').style.display = 'none';
+
+  try {
+    const result = await callAI(
+      `Rewrite this image generation prompt to be much more detailed and effective for an AI image model. Add specific details about style, lighting, colors, composition, and mood. Keep it under 200 characters. Return ONLY the improved prompt, nothing else:\n\n${prompt}`,
+      'gpt-4o-mini'
+    );
+    const cleaned = result.replace(/^["']|["']$/g, '').trim();
+    document.getElementById('enhancedPromptText').textContent = cleaned;
+    document.getElementById('enhancedPromptBox').style.display = 'block';
+  } catch(e) {
+    showToast('Could not enhance prompt: ' + e.message);
+  } finally { loader.classList.remove('active'); }
+}
+
+function useEnhancedPrompt() {
+  const enhanced = document.getElementById('enhancedPromptText').textContent;
+  document.getElementById('imgPrompt').value = enhanced;
+  document.getElementById('enhancedPromptBox').style.display = 'none';
+  showToast('Prompt updated!');
+}
+
+async function generateImage() {
+  const userPrompt = document.getElementById('imgPrompt').value.trim();
+  if (!userPrompt) { showToast('Enter a prompt first'); return; }
   if (typeof puter === 'undefined') {
-    document.getElementById('imgGrid').innerHTML = '<p style="color:var(--text-dim);font-size:11px;padding:20px;">Puter not detected. Host on puter.com first.</p>';
+    document.getElementById('imgPlaceholder').textContent = 'Puter not detected. Host this file on puter.com first.';
     return;
   }
+
+  const finalPrompt = buildFinalPrompt(userPrompt);
   const loader = document.getElementById('imgLoader');
+  const loaderTxt = document.getElementById('imgLoaderTxt');
+  const placeholder = document.getElementById('imgPlaceholder');
+
   loader.classList.add('active');
+  loaderTxt.textContent = 'Generating — this may take 15–30 seconds...';
+  placeholder.style.display = 'none';
+
   try {
-    const img = await puter.ai.txt2img(prompt);
+    const img = await puter.ai.txt2img(finalPrompt);
     const grid = document.getElementById('imgGrid');
+    if (grid.children.length === 0) placeholder.style.display = 'none';
     const card = document.createElement('div'); card.className = 'img-card';
     const src = img.src || img;
-    card.innerHTML = `<img src="${src}" alt="Generated"><div class="img-dl" onclick="downloadImg('${src}')">Save</div>`;
+    card.innerHTML = `
+      <img src="${src}" alt="Generated" style="cursor:pointer;" onclick="window.open('${src}','_blank')">
+      <div style="padding:10px 12px;background:var(--bg3);border-top:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-mid);margin-bottom:8px;line-height:1.5;">${userPrompt.length > 60 ? userPrompt.slice(0,60)+'…' : userPrompt}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="img-dl" onclick="downloadImg('${src}')">Save</button>
+          <button class="img-dl" style="background:var(--bg4);" onclick="document.getElementById('imgPrompt').value='${userPrompt.replace(/'/g,"\\'")}';showToast('Prompt loaded!')">Reuse</button>
+        </div>
+      </div>`;
     grid.prepend(card);
   } catch(e) {
-    document.getElementById('imgGrid').innerHTML = `<p style="color:var(--red);font-size:11px;padding:20px;">Error: ${e.message}</p>`;
+    placeholder.style.display = 'block';
+    placeholder.innerHTML = `<span style="color:var(--red);">Error: ${e.message}</span><br><span style="font-size:11px;">Try a different prompt or check your Puter connection.</span>`;
   } finally { loader.classList.remove('active'); }
 }
 
 function downloadImg(src) {
-  const a = document.createElement('a'); a.href = src; a.download = 'chica-img-'+Date.now()+'.png'; a.click();
+  const a = document.createElement('a'); a.href = src; a.download = 'glitch-img-'+Date.now()+'.png'; a.click();
 }
 
 // ═══════════════════════════════════════════ STREAMING
@@ -1566,8 +1680,8 @@ function formatJsonOnly() {
 // ═══════════════════════════════════════════ CLOUD FILES
 async function writeFile() {
   if (typeof puter==='undefined') { showToast('Puter not detected'); return; }
-  const name = document.getElementById('fileNameInput').value.trim()||'chica-file.txt';
-  const content = document.getElementById('fileContentInput').value.trim()||'Hello from Chica!';
+  const name = document.getElementById('fileNameInput').value.trim()||'glitch-file.txt';
+  const content = document.getElementById('fileContentInput').value.trim()||'Hello from Glitch AI!';
   const out = document.getElementById('fileOutput'); const txt = document.getElementById('fileText');
   txt.textContent = 'Writing...'; out.classList.add('visible');
   try { await puter.fs.write(name,content); txt.textContent = 'Written: '+name; }
@@ -1575,7 +1689,7 @@ async function writeFile() {
 }
 async function readFile() {
   if (typeof puter==='undefined') { showToast('Puter not detected'); return; }
-  const name = document.getElementById('fileNameInput').value.trim()||'chica-file.txt';
+  const name = document.getElementById('fileNameInput').value.trim()||'glitch-file.txt';
   const out = document.getElementById('fileOutput'); const txt = document.getElementById('fileText');
   txt.textContent = 'Reading...'; out.classList.add('visible');
   try { const blob = await puter.fs.read(name); txt.textContent = 'Content:\n\n'+await blob.text(); }
