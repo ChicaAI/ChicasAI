@@ -200,6 +200,14 @@ select.ai-select:focus{border-color:rgba(232,37,26,.5);}
 .puter-notice.visible{display:block;}
 .puter-notice strong{color:var(--red);font-weight:600;}
 
+/* ═══════════════════════════════════════════ MODEL SELECT ROW */
+.model-select-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.model-select-label{font-size:11px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.model-select{flex:1;min-width:200px;max-width:340px;}
+.model-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;white-space:nowrap;}
+.model-badge.gpt{background:rgba(16,163,127,.15);color:#10a37f;border:1px solid rgba(16,163,127,.3);}
+.model-badge.claude{background:var(--red-soft);color:var(--red);border:1px solid rgba(232,37,26,.25);}
+
 /* ═══════════════════════════════════════════ COLLAPSIBLE SIDEBAR */
 .sidebar-label.collapsible{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;transition:color var(--transition);}
 .sidebar-label.collapsible:hover{color:var(--text-mid);}
@@ -407,9 +415,32 @@ select.ai-select:focus{border-color:rgba(232,37,26,.5);}
         <button class="add-tab-btn" onclick="addTab()" title="New session">+</button>
       </div>
 
-      <div class="model-tabs">
-        <button class="model-tab active" data-model="gpt-4o-mini" onclick="selectModel(this)">GPT-4o Mini</button>
-        <button class="model-tab" data-model="claude-sonnet-4-5" onclick="selectModel(this)">Claude Sonnet 4</button>
+      <div class="model-select-row">
+        <label class="model-select-label">Model</label>
+        <select class="ai-select model-select" id="chatModelSelect" onchange="selectedModel=this.value;updateModelBadge()">
+          <optgroup label="— GPT Models —">
+            <option value="gpt-4o">GPT-4o</option>
+            <option value="gpt-4o-mini" selected>GPT-4o Mini</option>
+          </optgroup>
+          <optgroup label="— Claude 4 —">
+            <option value="claude-sonnet-4-6">Claude Sonnet 4.6 ⭐</option>
+            <option value="claude-opus-4-6">Claude Opus 4.6</option>
+            <option value="claude-opus-4-5">Claude Opus 4.5</option>
+            <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+          </optgroup>
+          <optgroup label="— Claude 4 (earlier) —">
+            <option value="claude-opus-4-1">Claude Opus 4.1</option>
+            <option value="claude-opus-4">Claude Opus 4</option>
+            <option value="claude-sonnet-4">Claude Sonnet 4</option>
+          </optgroup>
+          <optgroup label="— Claude 3 —">
+            <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+            <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
+            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+            <option value="claude-3-haiku">Claude 3 Haiku</option>
+          </optgroup>
+        </select>
+        <span id="modelBadge" class="model-badge">GPT</span>
       </div>
 
       <div class="tone-row" id="toneRow">
@@ -446,10 +477,14 @@ select.ai-select:focus{border-color:rgba(232,37,26,.5);}
     <div class="divider"></div>
 
     <!-- Tip banner -->
-    <div style="background:rgba(232,37,26,.07);border:1px solid rgba(232,37,26,.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--text-mid);line-height:1.8;">
+    <div style="background:rgba(232,37,26,.07);border:1px solid rgba(232,37,26,.2);border-radius:10px;padding:14px 18px;margin-bottom:12px;font-size:12px;color:var(--text-mid);line-height:1.8;">
       <strong style="color:var(--red);font-weight:700;">💡 Tip:</strong> AI image models work best with <strong style="color:var(--text);">detailed, descriptive prompts</strong>.
       Instead of <em>"make me a logo called Glitch AI"</em>, try <em>"Glitch AI logo, bold modern typography, neon cyan glitch effect, dark background, professional vector style, high contrast"</em>.
       Use the <strong style="color:var(--text);">Enhance Prompt</strong> button to auto-improve your description.
+    </div>
+    <!-- Text-in-image warning -->
+    <div style="background:rgba(255,180,0,.06);border:1px solid rgba(255,180,0,.2);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:12px;color:var(--text-mid);line-height:1.7;">
+      <strong style="color:#f5a623;font-weight:700;">⚠️ Logo / Text limitation:</strong> DALL-E (the model Puter uses) is <strong style="color:var(--text);">notoriously bad at rendering readable text</strong> inside images. This is a known limitation of the AI — not a bug in this app. For logos with real text, use a real design tool like <strong style="color:var(--text);">Canva, Figma, or Adobe Express</strong> after using the image as a background/style reference.
     </div>
 
     <div class="card">
@@ -524,9 +559,31 @@ select.ai-select:focus{border-color:rgba(232,37,26,.5);}
       <div class="voice-status" id="voiceStatus">Click to start recording</div>
       <div style="margin-top:16px;">
         <div class="input-wrap"><textarea class="ai-input" id="voiceTranscript" rows="3" placeholder="Transcript will appear here..."></textarea></div>
-        <div class="model-tabs" style="margin-top:10px;">
-          <button class="model-tab active" data-model="gpt-4o-mini" onclick="selectVoiceModel(this)">GPT-4o Mini</button>
-          <button class="model-tab" data-model="claude-sonnet-4-5" onclick="selectVoiceModel(this)">Claude Sonnet 4</button>
+        <div class="model-select-row" style="margin-top:10px;">
+          <label class="model-select-label">Model</label>
+          <select class="ai-select model-select" id="voiceModelSelect" onchange="selectedVoiceModel=this.value">
+            <optgroup label="— GPT Models —">
+              <option value="gpt-4o">GPT-4o</option>
+              <option value="gpt-4o-mini" selected>GPT-4o Mini</option>
+            </optgroup>
+            <optgroup label="— Claude 4 —">
+              <option value="claude-sonnet-4-6">Claude Sonnet 4.6 ⭐</option>
+              <option value="claude-opus-4-6">Claude Opus 4.6</option>
+              <option value="claude-opus-4-5">Claude Opus 4.5</option>
+              <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+            </optgroup>
+            <optgroup label="— Claude 4 (earlier) —">
+              <option value="claude-opus-4-1">Claude Opus 4.1</option>
+              <option value="claude-opus-4">Claude Opus 4</option>
+              <option value="claude-sonnet-4">Claude Sonnet 4</option>
+            </optgroup>
+            <optgroup label="— Claude 3 —">
+              <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+              <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
+              <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+              <option value="claude-3-haiku">Claude 3 Haiku</option>
+            </optgroup>
+          </select>
         </div>
         <div class="btn-row"><button class="btn" onclick="sendVoiceChat()">Send to AI</button></div>
       </div>
@@ -1310,7 +1367,8 @@ function puterOk(outId, txtId) {
 
 // ═══════════════════════════════════════════ PUTER CALL
 async function callAI(prompt, modelOverride) {
-  const model = modelOverride || selectedModel;
+  const dropdown = document.getElementById('chatModelSelect');
+  const model = modelOverride || (dropdown ? dropdown.value : selectedModel);
   const fullPrompt = (selectedPersonaPrompt ? selectedPersonaPrompt + '\n\n' : '') +
                      (selectedTone ? selectedTone + '\n\n' : '') + prompt;
   const response = await puter.ai.chat(fullPrompt, { model });
@@ -1358,6 +1416,15 @@ function selectVoiceModel(el) {
   el.closest('div').querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   selectedVoiceModel = el.dataset.model;
+}
+function updateModelBadge() {
+  const sel = document.getElementById('chatModelSelect');
+  const badge = document.getElementById('modelBadge');
+  if (!sel || !badge) return;
+  selectedModel = sel.value;
+  const isClaude = sel.value.startsWith('claude');
+  badge.textContent = isClaude ? 'Claude' : 'GPT';
+  badge.className = 'model-badge ' + (isClaude ? 'claude' : 'gpt');
 }
 function selectPersona(el, name, prompt) {
   document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('active'));
@@ -1420,8 +1487,10 @@ async function sendChat() {
   loaderTxt.textContent = selectedModel.toUpperCase() + ' THINKING...';
 
   try {
+    const dropdown = document.getElementById('chatModelSelect');
+    const currentModel = dropdown ? dropdown.value : selectedModel;
+    const modelLabel = dropdown ? dropdown.options[dropdown.selectedIndex].text.replace(' ⭐','') : currentModel;
     const result = await callAI(input);
-    const modelLabel = selectedModel === 'claude-sonnet-4-5' ? 'Claude Sonnet 4' : 'GPT-4o Mini';
     chatSessions[activeTab].push({ role:'ai', content:result, model:modelLabel });
     renderChatHistory();
   } catch(e) {
@@ -1505,7 +1574,7 @@ async function generateImage() {
   const userPrompt = document.getElementById('imgPrompt').value.trim();
   if (!userPrompt) { showToast('Enter a prompt first'); return; }
   if (typeof puter === 'undefined') {
-    document.getElementById('imgPlaceholder').textContent = 'Puter not detected. Host this file on puter.com first.';
+    document.getElementById('imgPlaceholder').innerHTML = '<span style="color:var(--red);">Puter not detected.</span> Host this file on puter.com first.';
     return;
   }
 
@@ -1520,28 +1589,81 @@ async function generateImage() {
 
   try {
     const img = await puter.ai.txt2img(finalPrompt);
-    const grid = document.getElementById('imgGrid');
-    if (grid.children.length === 0) placeholder.style.display = 'none';
-    const card = document.createElement('div'); card.className = 'img-card';
     const src = img.src || img;
+
+    // Convert to stable data URL via canvas so clicking/saving never breaks
+    const dataUrl = await imgToDataUrl(src);
+
+    const grid = document.getElementById('imgGrid');
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    const shortPrompt = userPrompt.length > 55 ? userPrompt.slice(0,55)+'…' : userPrompt;
     card.innerHTML = `
-      <img src="${src}" alt="Generated" style="cursor:pointer;" onclick="window.open('${src}','_blank')">
+      <img src="${dataUrl}" alt="Generated" style="cursor:zoom-in;width:100%;display:block;" onclick="openImgFullscreen('${dataUrl}')">
       <div style="padding:10px 12px;background:var(--bg3);border-top:1px solid var(--border);">
-        <div style="font-size:11px;color:var(--text-mid);margin-bottom:8px;line-height:1.5;">${userPrompt.length > 60 ? userPrompt.slice(0,60)+'…' : userPrompt}</div>
-        <div style="display:flex;gap:6px;">
-          <button class="img-dl" onclick="downloadImg('${src}')">Save</button>
-          <button class="img-dl" style="background:var(--bg4);" onclick="document.getElementById('imgPrompt').value='${userPrompt.replace(/'/g,"\\'")}';showToast('Prompt loaded!')">Reuse</button>
+        <div style="font-size:11px;color:var(--text-mid);margin-bottom:8px;line-height:1.5;">${shortPrompt}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="img-dl" onclick="downloadDataUrl(this)">⬇ Save</button>
+          <button class="img-dl" style="background:var(--bg4);cursor:pointer;" onclick="reusePrompt(this)">↺ Reuse</button>
+          <button class="img-dl" style="background:var(--bg4);cursor:pointer;" onclick="openImgFullscreen(this.closest('.img-card').querySelector('img').src)">⛶ View</button>
         </div>
       </div>`;
+    // store data on buttons
+    card.querySelector('.img-dl').dataset.url = dataUrl;
+    card.querySelectorAll('.img-dl')[1].dataset.prompt = userPrompt;
     grid.prepend(card);
   } catch(e) {
     placeholder.style.display = 'block';
-    placeholder.innerHTML = `<span style="color:var(--red);">Error: ${e.message}</span><br><span style="font-size:11px;">Try a different prompt or check your Puter connection.</span>`;
+    placeholder.innerHTML = `<span style="color:var(--red);">Generation failed: ${e.message}</span><br><span style="font-size:11px;margin-top:4px;display:block;">Try a different or shorter prompt.</span>`;
   } finally { loader.classList.remove('active'); }
 }
 
-function downloadImg(src) {
-  const a = document.createElement('a'); a.href = src; a.download = 'glitch-img-'+Date.now()+'.png'; a.click();
+// Convert any image src to a base64 data URL via canvas
+function imgToDataUrl(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      canvas.getContext('2d').drawImage(image, 0, 0);
+      try { resolve(canvas.toDataURL('image/png')); }
+      catch(e) { resolve(src); } // fallback to original src if CORS blocks
+    };
+    image.onerror = () => resolve(src);
+    image.src = src;
+  });
+}
+
+function openImgFullscreen(dataUrl) {
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Glitch AI — Generated Image</title>
+  <style>body{margin:0;background:#0c0c0d;display:flex;align-items:center;justify-content:center;min-height:100vh;}
+  img{max-width:95vw;max-height:95vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.8);}
+  a{display:block;text-align:center;margin-top:14px;color:#e8251a;font-family:sans-serif;font-size:13px;text-decoration:none;}
+  </style></head><body>
+  <div><img src="${dataUrl}" alt="Generated">
+  <a href="${dataUrl}" download="glitch-ai-${Date.now()}.png">⬇ Download Image</a></div>
+  </body></html>`);
+  w.document.close();
+}
+
+function downloadDataUrl(btn) {
+  const url = btn.dataset.url || btn.closest('.img-card').querySelector('img').src;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'glitch-ai-' + Date.now() + '.png';
+  a.click();
+}
+
+function reusePrompt(btn) {
+  const prompt = btn.dataset.prompt;
+  if (prompt) {
+    document.getElementById('imgPrompt').value = prompt;
+    showToast('Prompt loaded!');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
 }
 
 // ═══════════════════════════════════════════ STREAMING
@@ -1599,10 +1721,12 @@ async function sendVoiceChat() {
   const loader = document.getElementById('voiceLoader');
   const out = document.getElementById('voiceOutput');
   loader.classList.add('active'); out.classList.remove('visible');
+  const voiceDrop = document.getElementById('voiceModelSelect');
+  const voiceModel = voiceDrop ? voiceDrop.value : selectedVoiceModel;
+  const voiceLabel = voiceDrop ? voiceDrop.options[voiceDrop.selectedIndex].text.replace(' ⭐','') : voiceModel;
   try {
-    const result = await callAI(text, selectedVoiceModel);
-    const label = selectedVoiceModel === 'claude-sonnet-4-5' ? 'Claude Sonnet 4' : 'GPT-4o Mini';
-    document.getElementById('voiceLabel').textContent = label + ' — Response';
+    const result = await callAI(text, voiceModel);
+    document.getElementById('voiceLabel').textContent = voiceLabel + ' — Response';
     document.getElementById('voiceText').textContent = result;
     out.classList.add('visible');
   } catch(e) {
