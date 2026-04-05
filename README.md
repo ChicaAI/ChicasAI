@@ -31,7 +31,7 @@
 
 </div>
 
-### ✨ Chica's AI — Powered by Puter.js
+### ✨ Glitch AI — Powered by Puter.js
 
 > A free AI-powered web app — no API keys, no sign-ups, no cost.
 
